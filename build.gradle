@@ -72,3 +72,5 @@ task deploy() {
         }    
     }
 }
+
+deploy.dependsOn build
