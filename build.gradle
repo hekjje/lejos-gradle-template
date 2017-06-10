@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+version = '0.0.1'
+
+mainClassName = 'app.Application'
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.google.guava:guava:20.0'
+
+    testCompile 'junit:junit:4.12'
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '3.3'
+  distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
+}
+
+task copyDependencies(type: Copy) {
+    description 'Copies the declared dependencies to the dependencies folder.'
+    [ 'compile','runtime','testCompile' ].each { mode ->
+    copy {
+        from configurations.getByName(mode).files
+        into 'dependencies'
+    }
+  }
+}
