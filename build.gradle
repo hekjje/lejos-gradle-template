@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id "org.hidetake.ssh" version "2.9.0"
 }
 
 version = projectVersion
@@ -45,6 +46,13 @@ jar {
 	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
+remotes {
+  ev3 {
+    host = ev3Server
+    user = ev3Username
+    password = ev3Password
+  }
+
 task wrapper(type: Wrapper) {
   gradleVersion = '3.3'
   distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
@@ -63,12 +71,12 @@ task copyDependencies(type: Copy) {
 task deploy() {
     description 'Deploys the jar file to the EV3 brick';
     doLast {
-        ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp', classpath: configurations.sshAntTask.asPath)
-        ant.scp(todir: ev3Username+'@'+ev3Server+':/home/lejos/programs',
-        password: ev3Password,verbose: 'true') {
-            fileset(dir: './build/libs') {
-                include(name: '**/*.jar')
+        ssh.run {
+            session(remotes.ev3dev) {
+                put from: "./build/libs/" + "${rootProject.name}" + "-" + version + ".jar", into: "/home/lejos/programs"
             }
-        }    
+        }
     }
 }
+
+deploy.dependsOn clean, build
